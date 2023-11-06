@@ -1,12 +1,12 @@
-.<?php
+<?php
 
     namespace App\Http\Controllers;
 
-    use Illuminate\Support\Facades\Validator;
+    
     use Illuminate\Http\Request;
-    use App\Http\Resources\PlacesCollection;
-    use App\Models\Nilaialt;
+    use App\Http\Resources\KotaCollection;
     use App\Models\Places;
+    use App\Models\Kota;
     use Inertia\Inertia;
 
 
@@ -20,9 +20,9 @@
          */
         public function index()
         {
-            $places = new PlacesCollection(Places::paginate(20));
-            return Inertia::render('Admin/Wisata/index', [
-                'places' => $places
+            $kotas = new KotaCollection(Kota::paginate(20));
+            return Inertia::render('Admin/Kota/index', [
+                'kota' => $kotas
             ]);
         }
 
@@ -33,7 +33,7 @@
          */
         public function create()
         {
-            return Inertia::render('Admin/Wisata/kreate');
+            return Inertia::render('Admin/Kota/create');
         }
 
         /**
@@ -45,18 +45,10 @@
 
         public function store(Request $request)
         {
-
             //set validation
             $request->validate([
-                'namatempat' => 'required',
-                'jeniswisata' => 'required',
-                'alamat' => 'required',
-                'harga' => 'required',
-                'jambuka' => 'required',
-                'jamtutup' => 'required',
-                'desc'  => 'required',
+                'namakota' => 'required',
                 'gambar' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
-                'link' => 'required',
             ]);
 
             if ($request->hasFile('gambar')) {
@@ -65,32 +57,16 @@
                 $gambar->move(public_path('uploads'), $gambarName);
             }
 
-            //create wisata
-            $places = new Places([
-                'namatempat' => $request->input('namatempat'),
-                'jeniswisata' => $request->input('jeniswisata'),
-                'alamat' => $request->input('alamat'),
-                'harga' => $request->input('harga'),
-                'jambuka' => $request->input('jambuka'),
-                'jamtutup' => $request->input('jamtutup'),
-                'desc' => $request->input('desc'),
+            //create kota
+            $kota = new Kota([
+                'namakota' => $request->input('namakota'),  
                 'gambar' => $gambarName, // Store the image path in the database
-                'link' => $request->input('link'),
+                
             ]);
 
-            $places->save();
-
-            Nilaialt::create([
-                'wisata_id' => $places->wisata_id,
-                'rate_fasilitas' => "0.25",
-                'rate_pelayanan' => "0.25",
-                'rate_ramahkeluarga' => "0.25",
-                'rate_akomodasi' => "0.25",
-
-            ]);
-
+            $kota->save();
             //redirect
-            return redirect()->route('admin.wisata')->with('message', 'Data Berhasil Disimpan!');
+            return redirect()->route('admin.kota')->with('message', 'Data Kota Berhasil Disimpan!');
         }
 
 
@@ -114,11 +90,12 @@
          * @param  int  $id
          * @return \Illuminate\Http\Response
          */
-        public function edit(Places $places, Request $request)
+        public function edit(Kota $kota, Request $request)
         {
+
             //dd($request);
-            return Inertia::render('Admin/Wisata/edit', [
-                'places' => $places->find($request->wisata_id)
+            return Inertia::render('Admin/Kota/edit', [
+                'kota' => $kota->find($request->kota_id)
             ]);
         }
 
@@ -132,34 +109,40 @@
         public function update(Request $request)
         {
 
-            //$dataplaces = Places::find($request->id);
+            $datakota = Kota::find($request->kota_id);
+            //dd($datakota);
             $request->validate([
-                'namatempat' => 'required',
-                'jeniswisata' => 'required',
-                'alamat' => 'required',
-                'harga' => 'required',
-                'jambuka' => 'required',
-                'jamtutup' => 'required',
-                'desc'  => 'required',
-                'gambar'  => 'required',
-                'link' => 'required',
+                'namakota' => 'required',
+                'gambar' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
             ]);
 
+            if ($request->hasFile('gambar')) {
+                $gambar = $request->file('gambar');
+                $gambarName = time() . '.' . $gambar->getClientOriginalExtension();
+                $gambar->move(public_path('uploads'), $gambarName);
+        
+                // Remove the old image if it exists
+                if ($datakota->gambar) {
+                    $oldImagePath = public_path('uploads') . '/' . $datakota->gambar;
+                    if (file_exists($oldImagePath)) {
+                        unlink($oldImagePath);
+                    }
+                }
+            } else {
+                // jika tidak ada image maka tutup 
+               $url = $datakota->gambar;
+               $imageName = pathinfo($url, PATHINFO_BASENAME);
+               $gambarName =$imageName;
+            }
+    
             //update post
-            Places::where('wisata_id', $request->wisata_id)->update([
-                'namatempat'     => $request->namatempat,
-                'jeniswisata'     => $request->jeniswisata,
-                'alamat'   => $request->alamat,
-                'harga'   => $request->harga,
-                'jambuka'   => $request->jambuka,
-                'jamtutup'   => $request->jamtutup,
-                'desc'   => $request->desc,
-                'gambar'   => $request->gambar,
-                'link'   => $request->link,
+            Kota::where('kota_id', $request->kota_id)->update([
+                'namakota'     => $request->namakota,
+                'gambar'   => $gambarName,
             ]);
 
             //redirect
-            return redirect()->route('admin.wisata')->with('message', 'Data Berhasil Diupdate!');
+            return redirect()->route('admin.kota')->with('message', 'Data Berhasil Diupdate!');
         }
 
         /**
@@ -170,8 +153,8 @@
          */
         public function destroy(Request $request)
         {
-            $places = Places::find($request->wisata_id);
-            $places->delete();
-            return redirect()->route('admin.wisata')->with('message', 'Data Berhasil Dihapus!');
+            $kota = Kota::find($request->kota_id);
+            $kota->delete();
+            return redirect()->route('admin.kota')->with('message', 'Data Berhasil Dihapus!');
         }
     }

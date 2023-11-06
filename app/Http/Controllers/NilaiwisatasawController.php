@@ -3,10 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Nilaialt;
+use App\Models\Nilaiwisatasaw;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
-class NilaialtController extends Controller
+class NilaiwisatasawController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -16,21 +17,21 @@ class NilaialtController extends Controller
     public function index()
     {
         //get all nilaialt
-        $datanilai = Nilaialt::select(
+        $datanilai = Nilaiwisatasaw::select(
 
             'nilaialt_id',
-            'nilaialt.wisata_id',
+            'nilaiwisatasaw.wisata_id',
             'rate_fasilitas',
             'rate_pelayanan',
             'rate_ramahkeluarga',
             'rate_akomodasi',
             'datawisata.namatempat'
         )
-        ->join('datawisata', 'nilaialt.wisata_id', '=', 'datawisata.wisata_id')
+        ->join('datawisata', 'nilaiwisatasaw.wisata_id', '=', 'datawisata.wisata_id')
         ->get();
         
         //return view
-        return Inertia::render('Admin/Nilaialt/index',[ 
+        return Inertia::render('Admin/Nilaiwisatasaw/index',[ 
             'nilaialts'=> $datanilai]);
     }
 
@@ -75,19 +76,19 @@ class NilaialtController extends Controller
     public function edit(Request $request)
     {
         //dd($request);
-        $datanilai = Nilaialt::select(
+        $datanilai = Nilaiwisatasaw::select(
 
             'nilaialt_id',
-            'nilaialt.wisata_id',
+            'nilaiwisatasaw.wisata_id',
             'rate_fasilitas',
             'rate_pelayanan',
             'rate_ramahkeluarga',
             'rate_akomodasi',
             'datawisata.namatempat'
         )
-        ->join('datawisata', 'nilaialt.wisata_id', '=', 'datawisata.wisata_id')
+        ->join('datawisata', 'nilaiwisatasaw.wisata_id', '=', 'datawisata.wisata_id')
         ->get();
-        return Inertia::render('Admin/Nilaialt/edit',[ 
+        return Inertia::render('Admin/Nilaiwisatasaw/edit',[ 
             'nilaialt'=> $datanilai->find($request->nilaialt_id)]);
     }
 
@@ -112,7 +113,7 @@ class NilaialtController extends Controller
         ]);
         
         //update nialialt ke db
-        Nilaialt::where('nilaialt_id', $request->get('nilaialt_id'))->update([
+        Nilaiwisatasaw::where('nilaialt_id', $request->get('nilaialt_id'))->update([
             'rate_fasilitas'=> $request->get('rate_fasilitas'),
             'rate_pelayanan'=> $request->get('rate_pelayanan'),
             'rate_ramahkeluarga'=> $request->get('rate_ramahkeluarga'),
@@ -120,7 +121,7 @@ class NilaialtController extends Controller
         ]);
       
         //redirect
-        return redirect()->route('admin.nilaialt')->with('message', 'Nilai Berhasil Diupdate!');
+        return redirect()->route('admin.Nilaiwisatasaw')->with('message', 'Nilai Berhasil Diupdate!');
     }
 
     /**
@@ -131,10 +132,6 @@ class NilaialtController extends Controller
      */
     public function destroy(Request $request)
     {
-        //deleta nilaialt
-        $nilaialt = Nilaialt::find($request->nilaialt_id);
-        Nilaialt::destroy($nilaialt->nilaialt_id);
-        return redirect()->route('admin.nilaialt')->with('message', 'Kriteria Berhasil Dihapus!');
 
     }
 }

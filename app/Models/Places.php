@@ -24,6 +24,7 @@ class Places extends Model
         'jamtutup',
         'desc' ,
         'gambar' ,
+        'namakota',
         'link'
     ];
 
